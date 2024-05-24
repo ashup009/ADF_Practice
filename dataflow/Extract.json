@@ -1,0 +1,43 @@
+{
+	"name": "Extract",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "CA_YoutubeData",
+						"type": "DatasetReference"
+					},
+					"name": "cajsondata"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "flatten1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          kind as string,",
+				"          etag as string,",
+				"          items as (kind as string, etag as string, id as string, snippet as (channelId as string, title as string, assignable as boolean))[]",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> cajsondata",
+				"cajsondata foldDown(unroll(items, items),",
+				"     mapColumn(",
+				"          kind = items.kind,",
+				"          etag = items.etag,",
+				"          id = items.id,",
+				"          snippet = items.snippet",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1"
+			]
+		}
+	}
+}
